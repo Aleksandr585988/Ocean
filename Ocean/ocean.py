@@ -23,22 +23,36 @@ class Ocean:
         self.__cells = []  # Ініціалізація списку клітин океану
         self.init_cells()
 
+    def __getitem__(self, item):
+        row, col = item
+        if 0 <= row < self.num_rows and 0 <= col < self.num_cols:
+            return self.__cells[row][col]
+        else:
+            raise IndexError
+
+    def __setitem__(self, key, value):
+        row, col = key
+        if 0 <= row < self.num_rows and 0 <= col < self.num_cols:
+            self.__cells[row][col] = value
+        else:
+            raise IndexError
+
     # відповідає за призначення клітини
     def assign_cell_at(self, a_coord, a_cell):
         # Призначає передану клітину в масив клітин океану за вказаними координатами.
-        self.get_cells()[a_coord.y][a_coord.x] = a_cell
+        self[a_coord.y, a_coord.x] = a_cell
 
     def north(self, cell):  # повертає сусідні клітинки на північ.
-        return self.get_cells()[(cell.offset.y - 1) % self.num_rows][cell.offset.x]
+        return self[(cell.offset.y - 1) % self.num_rows, cell.offset.x]
 
     def south(self, cell):  # повертає сусідні клітинки на південь.
-        return self.get_cells()[(cell.offset.y + 1) % self.num_rows][cell.offset.x]
+        return self[(cell.offset.y + 1) % self.num_rows, cell.offset.x]
 
     def east(self, cell):  # повертає сусідні клітинки на схід
-        return self.get_cells()[cell.offset.y][(cell.offset.x + 1) % self.num_cols]
+        return self[cell.offset.y, (cell.offset.x + 1) % self.num_cols]
 
     def west(self, cell):  # повертає сусідні клітинки на захід.
-        return self.get_cells()[cell.offset.y][(cell.offset.x - 1) % self.num_cols]
+        return self[cell.offset.y, (cell.offset.x - 1) % self.num_cols]
 
     def prompt_for_count(self, name, default, limit=0):  # запитує у користувача кількість об’єктів
         count = int(input(f"\nEnter number of {name}: (Default = {default}): ") or default)
