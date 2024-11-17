@@ -22,21 +22,26 @@ class Cell:
             self.offset = to_coord  # Оновлює координати клітини на нові
             self.owner.assign_cell_at(to_coord, self)  # Призначає поточну клітину новим координатам
 
+    def direction(self):
+        directions = [
+            self.owner[(self.offset.y - 1) % self.owner.num_rows, self.offset.x],  # north
+            self.owner[(self.offset.y + 1) % self.owner.num_rows, self.offset.x],  # south
+            self.owner[self.offset.y, (self.offset.x + 1) % self.owner.num_cols],  # east
+            self.owner[self.offset.y, (self.offset.x - 1) % self.owner.num_cols]  # west
+        ]
+        return directions
+
     # Повертає випадкову сусідню клітину
     def get_neighbor_with_image(self, an_image):  # отримує випадкову сусідню комірку з певним зображенням.
-        # Створює список directions, що містить сусідні клітини (північ, південь, захід, схід) поточної клітини.
-        directions = [self.owner.north(self), self.owner.south(self), self.owner.east(self), self.owner.west(self)]
         # Фільтрує сусідів і зберігає лише ті, що мають зображення, яке відповідає
-        neighbors = [cell for cell in directions if cell.get_image() == an_image]
+        neighbors = [cell for cell in self.direction() if cell.get_image() == an_image]
         # Повертає випадкову сусідню клітину з відповідним зображенням, в іншому випадку повертає саму клітину.
         return random.choice(neighbors) if neighbors else self
 
     # Шукає порожню сусідню клітину
     def get_empty_neighbor_coord(self, default_image=Constants.DEFAULT_IMAGE):  # знаходить випадкову порожні сусідні клітини.
-        # Створює список directions з сусідніми клітинами.
-        directions = [self.owner.north(self), self.owner.south(self), self.owner.east(self), self.owner.west(self)]
         # Фільтрує сусідів, зберігаючи лише ті, що порожні.
-        empty_neighbors = [cell for cell in directions if cell.get_image() == default_image]
+        empty_neighbors = [cell for cell in self.direction() if cell.get_image() == default_image]
         # Повертає координати випадкової порожньої сусідньої клітини, в іншому випадку повертає координати самої клітини.
         return random.choice(empty_neighbors).get_offset() if empty_neighbors else self.offset
 
