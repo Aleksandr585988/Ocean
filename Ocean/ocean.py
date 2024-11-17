@@ -11,6 +11,11 @@ from obstacle import Obstacle
 
 class Ocean(User):
     def __init__(self, max_rows=Constants.MAX_ROWS, max_cols=Constants.MAX_COLS,):
+        if not isinstance(max_rows, int) or max_rows <= 0:
+            raise ValueError(f"Invalid number of rows: {max_rows}. Must be a positive integer.")
+        if not isinstance(max_cols, int) or max_cols <= 0:
+            raise ValueError(f"Invalid number of columns: {max_cols}. Must be a positive integer.")
+
         self.num_rows = max_rows  # кількість рядків в океан
         self.num_cols = max_cols  # кількість стовпців в океані
         self.size = self.num_rows * self.num_cols  # обчислює загальну кількість клітин в океані, множе іх
@@ -38,12 +43,17 @@ class Ocean(User):
 
     # відповідає за призначення клітини
     def assign_cell_at(self, a_coord, a_cell):
+        if not isinstance(a_coord, Coordinate):
+            raise ValueError(f"Invalid coordinate type: {type(a_coord)}. Expected 'Coordinate'.")
+        if not isinstance(a_cell, Cell):
+            raise ValueError(f"Invalid cell type: {type(a_cell)}. Expected 'Cell'.")
+
         self.validation_index(a_coord.y, a_coord.x)
         # Призначає передану клітину в масив клітин океану за вказаними координатами.
         self[a_coord.y, a_coord.x] = a_cell
 
     def north(self, cell):
-        """Повертає осередок на півдні щодо поточного."""
+        """Повертає осередок на північ щодо поточного."""
         row = (cell.offset.y - 1) % self.num_rows
         col = cell.offset.x
         self.validation_index(row, col)  # Проверка индекса после вычисления
@@ -71,6 +81,9 @@ class Ocean(User):
         return self[row, col]
 
     def init_cells(self):  # Викликає методи ініціалізації комірок
+        if self.num_predators + self.num_prey + self.num_obstacles > self.size:
+            raise ValueError("The number of predators, prey, and obstacles exceeds the total number of cells.")
+
         self.add_empty_cells()
         self.add_obstacles()
         self.add_predators()
@@ -86,6 +99,11 @@ class Ocean(User):
 
     # метод додавання об’єктів
     def add_entities(self, entity_class, count):
+        # Перевірка на те, що entity_class є підкласом Entity
+        if not issubclass(entity_class, (Predator, Prey, Obstacle)):
+            raise ValueError(
+                f"Invalid entity class: {entity_class}. Must be a subclass of Predator, Prey, or Obstacle.")
+
         # кожна клітина отримуе коордінати тазображення за замовчуванням
         for _ in range(count):
             empty = self.get_empty_cell_coord()
@@ -112,10 +130,15 @@ class Ocean(User):
                 return Coordinate(x, y)
 
     def get_cells(self):
+        # Перевірка типу всіх клітин
+        if not all(isinstance(cell, Cell) for row in self.__cells for cell in row):
+            raise TypeError("All cells must be instances of the 'Cell' class.")
         return self.__cells
 
     def display_cells(self):  # відображає поточний стан сітки океану
         for row in self.__cells:
             for cell in row:
+                if not isinstance(cell, Cell):
+                    raise TypeError(f"Invalid cell type: {type(cell)}. Expected 'Cell'.")
                 cell.display()
             print()
