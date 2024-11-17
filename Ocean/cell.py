@@ -5,6 +5,18 @@ from constants import Constants
 
 class Cell:
     def __init__(self, owner, offset, image):
+        # Валідація owner
+        if not hasattr(owner, 'assign_cell_at'):
+            raise ValueError('Owner has no assign_cell_at method')
+
+        # Валідація offset (перевірка, що об'єкт має атрибути x і y)
+        if not hasattr(offset, 'x') or not hasattr(offset, 'y'):
+            raise ValueError('Offset has no x or y method')
+
+        # Валідація image
+        if not isinstance(image, str):
+            raise ValueError("Image must be a string")
+
         self.owner = owner
         self.offset = offset
         self.image = image
@@ -17,12 +29,24 @@ class Cell:
 
     # Переміщує клітину з одних координат на інші. Якщо нові координати відрізняються від поточних
     def move_from(self, from_coord, to_coord, default_image=Constants.DEFAULT_IMAGE):  # переміщує клітинку до нової координати, якщо вона відрізняється.
+        # Валідація координат
+        if not hasattr(from_coord, 'x') or not hasattr(from_coord, 'y'):
+            raise ValueError("from_coord must have 'x' and 'y' attributes")
+        if not hasattr(to_coord, 'x') or not hasattr(to_coord, 'y'):
+            raise ValueError("to_coord must have 'x' and 'y' attributes")
+
         if to_coord != from_coord:  # Перевіряє, чи нові координати to_coord відрізняються від поточних
             self.owner.assign_cell_at(from_coord, Cell(self.owner, from_coord, default_image))  # Якщо координати відрізняються, призначає нову клітину з дефолтним зображенням у старі координати
             self.offset = to_coord  # Оновлює координати клітини на нові
             self.owner.assign_cell_at(to_coord, self)  # Призначає поточну клітину новим координатам
 
     def direction(self):
+        # Перевірка коректності індексів
+        if not (0 <= self.offset.y < self.owner.num_rows):
+            raise ValueError(f"Y coordinate {self.offset.y} out of bounds")
+        if not (0 <= self.offset.x < self.owner.num_cols):
+            raise ValueError(f"X coordinate {self.offset.x} out of bounds")
+
         directions = [
             self.owner[(self.offset.y - 1) % self.owner.num_rows, self.offset.x],  # north
             self.owner[(self.offset.y + 1) % self.owner.num_rows, self.offset.x],  # south
